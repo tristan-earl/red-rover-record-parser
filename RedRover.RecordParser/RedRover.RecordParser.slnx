@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../RedRover.RecordParser.UnitTests/RedRover.RecordParser.UnitTests.csproj" />
+  <Project Path="RedRover.RecordParser.csproj" />
+</Solution>
