@@ -7,7 +7,7 @@
 
         public bool EndOfData => _currentIndex >= _data.Length;
 
-        public RecordParser(string data, int startIndex)
+        public RecordParser(string data)
         {
             if (string.IsNullOrEmpty(data))
             {
@@ -15,7 +15,7 @@
             }
 
             _data = data;
-            _currentIndex = startIndex;
+            _currentIndex = 0;
             SkipToNonWhitespace();
         }
 
@@ -84,10 +84,10 @@
         }
 
         /// <summary>
-        /// Reads chars from the current position and up to, but not including, the specified end char.
+        /// Reads chars from the current position and up to, but not including, the specified end chars.
         /// Returns those chars in a string.
         /// </summary>
-        /// <param name="endChars">Chars at which to terminate reading.</param>
+        /// <param name="endChars">Chars at which to terminate reading. Reading stops when any of these chars are encountered.</param>
         /// <param name="skipEndChar">
         /// If true, current position is advanced one position past the end char.
         /// Otherwise, current position remains on end char.

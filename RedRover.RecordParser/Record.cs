@@ -37,7 +37,7 @@ namespace RedRover.RecordParser
         /// </remarks>
         public static Record Parse(string data)
         {
-            var parser = new RecordParser(data, startIndex: 1); // Start at index 1 to skip leading '('
+            var parser = new RecordParser(data);
             var record = new Record();
 
             static void ThrowIf(bool condition, string message)
@@ -47,6 +47,9 @@ namespace RedRover.RecordParser
                     throw new RecordParserException(message);
                 }
             }
+
+            // Read first open parenthesis
+            parser.ReadObjectMarker(string.Empty);
 
             record.Id = parser.ReadValue();
             record.Name = parser.ReadValue();

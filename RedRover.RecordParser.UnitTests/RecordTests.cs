@@ -89,10 +89,11 @@
         }
 
         [Theory]
-
         [InlineData(null)]
         [InlineData("")]
         [InlineData("()")]
+        [InlineData("(")]
+        [InlineData(")")]
 
         // Missing name
         [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId)")]
@@ -110,6 +111,7 @@
         [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId, unexpected_field)")]
 
         // Missing parentheses
+        [InlineData("id, name, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId)")]
         [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId")]
         [InlineData("(id, email, type type_id, type_name, customFields(c1, c2, c3)), externalId)")]
         [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3), externalId)")]
