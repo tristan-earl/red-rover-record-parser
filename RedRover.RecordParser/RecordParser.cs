@@ -16,13 +16,14 @@
 
             _data = data;
             _currentIndex = startIndex;
+            SkipToNonWhitespace();
         }
 
         public string ReadValue()
         {
             string value = ReadTo(',');
             SkipToNonWhitespace();
-            return value;
+            return value.Trim();
         }
 
         public IEnumerable<string> ReadListValues()
@@ -38,7 +39,7 @@
                     SkipToNonWhitespace();
                 }
 
-                yield return value;
+                yield return value.Trim();
             }
 
             // Skip object end
@@ -48,17 +49,18 @@
         public string ReadObjectMarker(string objectMarker)
         {
             string value = ReadTo('(');
-            if (value != objectMarker)
+            if (value.Trim() != objectMarker)
             {
                 throw new RecordParserException($"Expected '{objectMarker}' marker at this position.");
             }
 
+            SkipToNonWhitespace();
             return value;
         }
 
         public string ReadToObjectEnd()
         {
-            return ReadTo(')');
+            return ReadTo(')').Trim();
         }
 
         public void SkipToNextValue()

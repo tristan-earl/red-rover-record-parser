@@ -48,6 +48,17 @@
                     "externalId")
             ],
 
+            // Extra spaces
+            [
+                "( id , name , email , type ( type_id , type_name ,  customFields( c1, c2 , c3 )  ),  externalId  )",
+                new Record(
+                    "id",
+                    "name",
+                    "email",
+                    new RecordType("type_id", "type_name", new List<string> { "c1", "c2", "c3" }),
+                    "externalId")
+            ],
+
             // "Real" data
             [
                 "(12345, John Doe, john.doe@gmail.com, type(12, Teacher, customFields(Bachelor's degree, 5 years experience, Math expertise)), abcde)",
@@ -75,6 +86,40 @@
             Assert.Equal(expected.Type.Name, actual.Type.Name);
             Assert.Equal(expected.Type.CustomFields, actual.Type.CustomFields);
             Assert.Equal(expected.ExternalId, actual.ExternalId);
+        }
+
+        [Theory]
+
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("()")]
+
+        // Missing name
+        [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId)")]
+
+        // Missing type object
+        [InlineData("(id, name, email, externalId)")]
+
+        // Missing type.customFields object
+        [InlineData("(id, email, type(type_id, type_name), externalId)")]
+
+        // Unexpected fields after type.customFields
+        [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3), unexpected_field), externalId)")]
+
+        // Unexpected fields after externalId
+        [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId, unexpected_field)")]
+
+        // Missing parentheses
+        [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId")]
+        [InlineData("(id, email, type type_id, type_name, customFields(c1, c2, c3)), externalId)")]
+        [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3), externalId)")]
+
+        // Data cut short
+        [InlineData("(id, email, type(type_id, type_nam")]
+        public void Record_Parse_Failure(string inputData)
+        {
+            // Act & Assert
+            Assert.Throws<RecordParserException>(() => Record.Parse(inputData));
         }
     }
 }
