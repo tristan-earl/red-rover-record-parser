@@ -83,13 +83,34 @@
 
             // "Real" data
             [
-                "(12345, John Doe, john.doe@gmail.com, type(12, Teacher, customFields(\"Bachelor's degree\", 5 years experience, Math expertise)), abcde)",
+                "(12345, John Doe, john.doe@gmail.com, type(12, Teacher, customFields(Bachelor's degree, 5 years experience, Math expertise)), abcde)",
                 new Record(
                     "12345",
                     "John Doe",
                     "john.doe@gmail.com",
-                    new RecordType("12", "Teacher", new List<string> { "\"Bachelor's degree\"", "5 years experience", "Math expertise" }),
+                    new RecordType("12", "Teacher", new List<string> { "Bachelor's degree", "5 years experience", "Math expertise" }),
                     "abcde")
+            ],
+
+            // Escaped segments
+            [
+                "(\"i,d(\" , \"(n,a,m,e) \" , \"ema(,)il\", type(\"type)(,_id\", \"type_name(), \" , customFields(\"c,)1 \", \"c)(,2\", \"(((c,3)))\" )), \"e,x,t,ernal()()Id\")",
+                new Record(
+                    "i,d(",
+                    "(n,a,m,e)",
+                    "ema(,)il",
+                    new RecordType("type)(,_id", "type_name(),", new List<string> { "c,)1", "c)(,2", "(((c,3)))" }),
+                    "e,x,t,ernal()()Id")
+            ],
+
+            [
+                "(12345, \"John Doe, Jr.\", john.doe@gmail.com, type(12, Teacher, customFields(Bachelor's degree, 5 years experience, \"Math expertise, Spanish proficiency (studied 8 years)\")), \"\"\"abcde\"\"\")",
+                new Record(
+                    "12345",
+                    "John Doe, Jr.",
+                    "john.doe@gmail.com",
+                    new RecordType("12", "Teacher", new List<string> { "Bachelor's degree", "5 years experience", "Math expertise, Spanish proficiency (studied 8 years)" }),
+                    "\"abcde\"")
             ]
         ];
 
@@ -146,6 +167,14 @@
         [InlineData("(id, name, email, type(type_id, type_name, customFields(")]
         [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2")]
         [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2,")]
+
+        // Invalid escape segments
+        [InlineData("(id, \"na\"me, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId)")]
+        [InlineData("(id, \"na\"  me, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId)")]
+        [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2, \"c3\"")]
+        [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2, \"c\"3)), externalId)")]
+        [InlineData("(id, na,me, email, type(type_id, type_name, customFields(c1, c2, c3)), externalId)")]
+        [InlineData("(id, na,me, email, type(type_id, type_name, customFields(c1, c2, (c3))), externalId)")]
         public void Record_Parse_Failure(string inputData)
         {
             // Act & Assert

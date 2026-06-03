@@ -29,12 +29,6 @@ namespace RedRover.RecordParser
         /// <summary>
         /// Parses raw string data into a <see cref="Record"/>.
         /// </summary>
-        /// <remarks>
-        /// Assumptions:
-        /// - <paramref name="data"/> is in the following format:
-        /// (id, name, email, type(id, name, customFields(c1, c2, c3)), externalId)
-        /// - Field values do not contain commas or parentheses.
-        /// </remarks>
         public static Record Parse(string data)
         {
             var parser = new RecordParser(data);
@@ -69,7 +63,7 @@ namespace RedRover.RecordParser
 
             var recordType = new RecordType(typeId, typeName, typeCustomFields);
 
-            ThrowIf(parser.ReadToObjectEnd() != string.Empty, "Expected end of type object");
+            ThrowIf(parser.ReadToObjectEnd(handleEscaping: false) != string.Empty, "Expected end of type object");
             parser.SkipToNextValue();
 
             record.ExternalId = parser.ReadToObjectEnd();

@@ -5,6 +5,16 @@ Command line tool solution for record parsing code puzzle.
 ## Requirements
 - .NET 10 SDK
 
+## Assumptions
+- Input string is in the following format: `(id, name, email, type(id, name, customFields(c1, c2, c3)), externalId)`
+- All the above fields are present.
+- `customFields` may be empty or contain any number of fields.
+
+### Escaping
+Fields that contain commas `,` or parentheses `()` must be escaped using CSV style.
+  - Fields with special characters must be surrounded by double quotes e.g. `"John Doe, Jr."`
+  - If an escaped field contains a double quote, use consecutive double quotes e.g `"""To be or not to be."" said Hamlet"`
+
 ## Usage
 
 Open command line and navigate to `<repo root>\RedRover.RecordParser`

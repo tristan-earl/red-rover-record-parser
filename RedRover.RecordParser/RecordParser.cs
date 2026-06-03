@@ -24,21 +24,21 @@
         /// <summary>
         /// Reads a field value at the current position.
         /// </summary>
-        public string ReadValue()
+        public string ReadValue(bool handleEscaping = true)
         {
-            string value = ReadTo(',');
+            string value = ReadTo(',', handleEscaping: handleEscaping);
             return value.Trim();
         }
 
         /// <summary>
         /// Enumerates field values from the current list object.
         /// </summary>
-        public IEnumerable<string> ReadListValues()
+        public IEnumerable<string> ReadListValues(bool handleEscaping = true)
         {
             char[] terminatingChars = [',', ')'];
             while (!EndOfData && _data[_currentIndex] != ')')
             {
-                yield return ReadTo(terminatingChars, skipEndChar: false).Trim();
+                yield return ReadTo(terminatingChars, skipEndChar: false, handleEscaping: handleEscaping).Trim();
 
                 if (!EndOfData && _data[_currentIndex] == ',')
                 {
@@ -73,9 +73,9 @@
         /// <summary>
         /// Reads to the end of the current object.
         /// </summary>
-        public string ReadToObjectEnd()
+        public string ReadToObjectEnd(bool handleEscaping = true)
         {
-            return ReadTo(')').Trim();
+            return ReadTo(')', handleEscaping: handleEscaping).Trim();
         }
 
         /// <summary>
@@ -95,9 +95,12 @@
         /// If true, current position is advanced one position past the end char.
         /// Otherwise, current position remains on end char.
         /// </param>
-        private string ReadTo(char endChar, bool skipEndChar = true)
+        /// <param name="handleEscaping">
+        /// True to handle escaped sequences surrounded by double quotes.
+        /// </param>
+        private string ReadTo(char endChar, bool skipEndChar = true, bool handleEscaping = false)
         {
-            return ReadTo([endChar], skipEndChar);
+            return ReadTo([endChar], skipEndChar, handleEscaping);
         }
 
         /// <summary>
@@ -109,17 +112,59 @@
         /// If true, current position is advanced one position past the end char.
         /// Otherwise, current position remains on end char.
         /// </param>
-        private string ReadTo(char[] endChars, bool skipEndChar = true)
+        /// <param name="handleEscaping">
+        /// True to handle escaped sequences surrounded by double quotes.
+        /// </param>
+        private string ReadTo(char[] endChars, bool skipEndChar = true, bool handleEscaping = false)
         {
             if (EndOfData)
             {
                 throw new RecordParserException("Reached end of data.");
             }
 
+            bool escapedMode = false;
+            if (handleEscaping)
+            {
+                // Escaped segments are surrounded by double quotes.
+                // Check if the first non-whitespace char is a double quote.
+                SkipToNonWhitespaceChar();
+
+                if (!EndOfData && _data[_currentIndex] == '"')
+                {
+                    escapedMode = true;
+                    _currentIndex++;
+                }
+            }
+
             string value = string.Empty;
             char c;
-            while (!EndOfData && !endChars.Contains(c = _data[_currentIndex]))
+            while (!EndOfData && (!endChars.Contains(c = _data[_currentIndex]) || escapedMode))
             {
+                if (c == '"')
+                {
+                    // Double quote (") could mean we've reached the end of the escaped segment.
+                    // Check if there are two consecutive double quotes (""), which is just an
+                    // escaped double quote.
+                    _currentIndex++;
+                    if (EndOfData)
+                    {
+                        throw new RecordParserException("Reached end of data.");
+                    }
+
+                    c = _data[_currentIndex];
+                    if (c != '"')
+                    {
+                        SkipToNonWhitespaceChar();
+                        if (!EndOfData && endChars.Contains(_data[_currentIndex]))
+                        {
+                            // End char follows double quote. That means we're done reading.
+                            break;
+                        }
+
+                        throw new RecordParserException("Invalid escape sequence.");
+                    }
+                }
+
                 value += c;
                 _currentIndex++;
             }
@@ -130,6 +175,14 @@
             }
 
             return value;
+        }
+
+        private void SkipToNonWhitespaceChar()
+        {
+            while (!EndOfData && char.IsWhiteSpace(_data[_currentIndex]))
+            {
+                _currentIndex++;
+            }
         }
     }
 }
