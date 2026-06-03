@@ -1,5 +1,8 @@
 ﻿namespace RedRover.RecordParser
 {
+    /// <summary>
+    /// Parses records that use commas as field delimiters and parentheses as object delimiters.
+    /// </summary>
     public class RecordParser
     {
         private readonly string _data;
@@ -16,36 +19,46 @@
 
             _data = data;
             _currentIndex = 0;
-            SkipToNonWhitespace();
         }
 
+        /// <summary>
+        /// Reads a field value at the current position.
+        /// </summary>
         public string ReadValue()
         {
             string value = ReadTo(',');
-            SkipToNonWhitespace();
             return value.Trim();
         }
 
+        /// <summary>
+        /// Enumerates field values from the current list object.
+        /// </summary>
         public IEnumerable<string> ReadListValues()
         {
             char[] terminatingChars = [',', ')'];
-            while (_currentIndex < _data.Length && _data[_currentIndex] != ')')
+            while (!EndOfData && _data[_currentIndex] != ')')
             {
-                string value = ReadTo(terminatingChars, skipEndChar: false);
-                if (_currentIndex < _data.Length && _data[_currentIndex] == ',')
-                {
-                    // Landed on comma. Skip over comma and whitespace to the next value.
-                    _currentIndex++;
-                    SkipToNonWhitespace();
-                }
+                yield return ReadTo(terminatingChars, skipEndChar: false).Trim();
 
-                yield return value.Trim();
+                if (!EndOfData && _data[_currentIndex] == ',')
+                {
+                    _currentIndex++;
+                    
+                    if (!EndOfData && _data[_currentIndex] == ')')
+                    {
+                        // Edge case where last list item is empty
+                        yield return ReadTo(terminatingChars, skipEndChar: false).Trim();
+                    }
+                }
             }
 
             // Skip object end
             _currentIndex++;
         }
 
+        /// <summary>
+        /// Reads the object marker from the current position.
+        /// </summary>
         public string ReadObjectMarker(string objectMarker)
         {
             string value = ReadTo('(');
@@ -54,19 +67,23 @@
                 throw new RecordParserException($"Expected '{objectMarker}' marker at this position.");
             }
 
-            SkipToNonWhitespace();
             return value;
         }
 
+        /// <summary>
+        /// Reads to the end of the current object.
+        /// </summary>
         public string ReadToObjectEnd()
         {
             return ReadTo(')').Trim();
         }
 
+        /// <summary>
+        /// Advances position to the next field value.
+        /// </summary>
         public void SkipToNextValue()
         {
             ReadTo(',');
-            SkipToNonWhitespace();
         }
 
         /// <summary>
@@ -101,7 +118,7 @@
 
             string value = string.Empty;
             char c;
-            while (_currentIndex < _data.Length && !endChars.Contains(c = _data[_currentIndex]))
+            while (!EndOfData && !endChars.Contains(c = _data[_currentIndex]))
             {
                 value += c;
                 _currentIndex++;
@@ -113,22 +130,6 @@
             }
 
             return value;
-        }
-
-        /// <summary>
-        /// Advances the current position to the next non-whitespace char.
-        /// </summary>
-        private void SkipToNonWhitespace()
-        {
-            if (EndOfData)
-            {
-                throw new RecordParserException("Reached end of data.");
-            }
-
-            while (_currentIndex < _data.Length && char.IsWhiteSpace(_data[_currentIndex]))
-            {
-                _currentIndex++;
-            }
         }
     }
 }

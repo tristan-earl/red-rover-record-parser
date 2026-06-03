@@ -59,6 +59,28 @@
                     "externalId")
             ],
 
+            // Blank data fields
+            [
+                "(,,,type(,,customFields(,,)),)",
+                new Record(
+                    "",
+                    "",
+                    "",
+                    new RecordType("", "", new List<string> { "", "", "" }),
+                    "")
+            ],
+
+            // Whitespace data fields
+            [
+                "(  ,   ,   , type( ,   ,customFields(  ,   ,   )), )",
+                new Record(
+                    "",
+                    "",
+                    "",
+                    new RecordType("", "", new List<string> { "", "", "" }),
+                    "")
+            ],
+
             // "Real" data
             [
                 "(12345, John Doe, john.doe@gmail.com, type(12, Teacher, customFields(\"Bachelor's degree\", 5 years experience, Math expertise)), abcde)",
@@ -118,6 +140,8 @@
 
         // Data cut short
         [InlineData("(id, email, type(type_id, type_nam")]
+        [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2")]
+        [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2,")]
         public void Record_Parse_Failure(string inputData)
         {
             // Act & Assert
