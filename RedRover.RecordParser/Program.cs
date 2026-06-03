@@ -22,7 +22,9 @@ else if (flag == "-f")
 {
     string file = args[1];
     using var reader = new StreamReader(File.OpenRead(file));
-    using var writer = new StreamWriter(File.OpenWrite(@".\record_parser_results.txt"));
+
+    var resultsFile = File.Open(@".\record_parser_results.txt", FileMode.Create);
+    using var writer = new StreamWriter(resultsFile);
     string? line = null;
     int lineNumber = 0;
     int numErrors = 0;
@@ -47,4 +49,5 @@ else if (flag == "-f")
     }
 
     Console.WriteLine($"Parsed {lineNumber} records with {numErrors} errors");
+    Console.WriteLine($"Output written to {resultsFile.Name}");
 }
