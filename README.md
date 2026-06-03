@@ -13,7 +13,7 @@ Command line tool solution for record parsing code puzzle.
 ### Escaping
 Fields that contain commas `,` or parentheses `()` must be escaped using CSV style.
   - Fields with special characters must be surrounded by double quotes e.g. `"John Doe, Jr."`
-  - If an escaped field contains a double quote, use consecutive double quotes e.g `"""To be or not to be."" said Hamlet"`
+  - If an escaped field contains a double quote, use consecutive double quotes e.g `"""To be or not to be, that is the question."" said Hamlet"`
 
 ## Usage
 
