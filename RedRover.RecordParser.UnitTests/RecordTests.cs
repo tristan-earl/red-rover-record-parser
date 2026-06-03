@@ -50,7 +50,7 @@
 
             // Extra spaces
             [
-                "( id , name , email , type ( type_id , type_name ,  customFields( c1, c2 , c3 )  ),  externalId  )",
+                "  ( id , name , email , type ( type_id , type_name ,  customFields( c1, c2 , c3 )  ),  externalId  )",
                 new Record(
                     "id",
                     "name",
@@ -61,12 +61,12 @@
 
             // "Real" data
             [
-                "(12345, John Doe, john.doe@gmail.com, type(12, Teacher, customFields(Bachelor's degree, 5 years experience, Math expertise)), abcde)",
+                "(12345, John Doe, john.doe@gmail.com, type(12, Teacher, customFields(\"Bachelor's degree\", 5 years experience, Math expertise)), abcde)",
                 new Record(
                     "12345",
                     "John Doe",
                     "john.doe@gmail.com",
-                    new RecordType("12", "Teacher", new List<string> { "Bachelor's degree", "5 years experience", "Math expertise" }),
+                    new RecordType("12", "Teacher", new List<string> { "\"Bachelor's degree\"", "5 years experience", "Math expertise" }),
                     "abcde")
             ]
         ];
