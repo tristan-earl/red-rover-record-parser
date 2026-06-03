@@ -139,13 +139,111 @@
         [InlineData("(id, email, type(type_id, type_name, customFields(c1, c2, c3), externalId)")]
 
         // Data cut short
+        [InlineData("(id, email, type")]
+        [InlineData("(id, email, type(")]
         [InlineData("(id, email, type(type_id, type_nam")]
+        [InlineData("(id, name, email, type(type_id, type_name, customFields")]
+        [InlineData("(id, name, email, type(type_id, type_name, customFields(")]
         [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2")]
         [InlineData("(id, name, email, type(type_id, type_name, customFields(c1, c2,")]
         public void Record_Parse_Failure(string inputData)
         {
             // Act & Assert
             Assert.Throws<RecordParserException>(() => Record.Parse(inputData));
+        }
+
+        public static readonly IEnumerable<object[]> ToStringTestCases =
+        [
+            // Basic example
+            [
+                new Record(
+                    "id",
+                    "name",
+                    "email",
+                    new RecordType("type_id", "type_name", new List<string> { "c1", "c2", "c3" }),
+                    "externalId"),
+                $"- id{Environment.NewLine}- name{Environment.NewLine}- email{Environment.NewLine}- type{Environment.NewLine}  - type_id{Environment.NewLine}  - type_name{Environment.NewLine}  - customFields{Environment.NewLine}    - c1{Environment.NewLine}    - c2{Environment.NewLine}    - c3{Environment.NewLine}- externalId{Environment.NewLine}"
+            ],
+
+            // No custom fields
+            [
+                new Record(
+                    "id",
+                    "name",
+                    "email",
+                    new RecordType("type_id", "type_name", new List<string>()),
+                    "externalId"),
+                $"- id{Environment.NewLine}- name{Environment.NewLine}- email{Environment.NewLine}- type{Environment.NewLine}  - type_id{Environment.NewLine}  - type_name{Environment.NewLine}- externalId{Environment.NewLine}"
+            ],
+
+            // "Real" data
+            [
+                new Record(
+                    "12345",
+                    "John Doe",
+                    "john.doe@gmail.com",
+                    new RecordType("12", "Teacher", new List<string> { "\"Bachelor's degree\"", "5 years experience", "Math expertise" }),
+                    "abcde"),
+                $"- 12345{Environment.NewLine}- John Doe{Environment.NewLine}- john.doe@gmail.com{Environment.NewLine}- type{Environment.NewLine}  - 12{Environment.NewLine}  - Teacher{Environment.NewLine}  - customFields{Environment.NewLine}    - \"Bachelor's degree\"{Environment.NewLine}    - 5 years experience{Environment.NewLine}    - Math expertise{Environment.NewLine}- abcde{Environment.NewLine}"
+            ]
+        ];
+
+        [Theory]
+        [MemberData(nameof(ToStringTestCases))]
+        public void Record_ToString(Record record, string expected)
+        {
+            // Act
+            string actual = record.ToString();
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public static readonly IEnumerable<object[]> ToAlternateOrderStringTestCases =
+        [
+            // Basic example
+            [
+                new Record(
+                    "id",
+                    "name",
+                    "email",
+                    new RecordType("type_id", "type_name", new List<string> { "c1", "c2", "c3" }),
+                    "externalId"),
+                $"- email{Environment.NewLine}- externalId{Environment.NewLine}- id{Environment.NewLine}- name{Environment.NewLine}- type{Environment.NewLine}  - customFields{Environment.NewLine}    - c1{Environment.NewLine}    - c2{Environment.NewLine}    - c3{Environment.NewLine}  - type_id{Environment.NewLine}  - type_name{Environment.NewLine}"
+            ],
+
+            // No custom fields
+            [
+                new Record(
+                    "id",
+                    "name",
+                    "email",
+                    new RecordType("type_id", "type_name", new List<string>()),
+                    "externalId"),
+                $"- email{Environment.NewLine}- externalId{Environment.NewLine}- id{Environment.NewLine}- name{Environment.NewLine}- type{Environment.NewLine}  - type_id{Environment.NewLine}  - type_name{Environment.NewLine}"
+            ],
+
+            // "Real" data
+            [
+                new Record(
+                    "12345",
+                    "John Doe",
+                    "john.doe@gmail.com",
+                    new RecordType("12", "Teacher", new List<string> { "\"Bachelor's degree\"", "5 years experience", "Math expertise" }),
+                    "abcde"),
+                $"- john.doe@gmail.com{Environment.NewLine}- abcde{Environment.NewLine}- 12345{Environment.NewLine}- John Doe{Environment.NewLine}- type{Environment.NewLine}  - customFields{Environment.NewLine}    - \"Bachelor's degree\"{Environment.NewLine}    - 5 years experience{Environment.NewLine}    - Math expertise{Environment.NewLine}  - 12{Environment.NewLine}  - Teacher{Environment.NewLine}"
+            ]
+        ];
+
+        [Theory]
+        [MemberData(nameof(ToAlternateOrderStringTestCases))]
+        public void Record_ToAlternateOrderString(Record record, string expected)
+        {
+            // Act
+            string actual = record.ToAlternateOrderString();
+
+            // Assert
+            Assert.Equal(expected, actual);
         }
     }
 }
